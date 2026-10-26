@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Flow - Next.js + Laravel + PostgreSQL Stack
 
-## Getting Started
+Estructura completa desacoplada con **Next.js** en el frontend, **Laravel (v13)** en el backend y base de datos **PostgreSQL 17**, orquestada con **Docker Compose**.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📁 Estructura del Proyecto
+
+```text
+├── frontend/                 # Next.js (App Router + TypeScript + Tailwind)
+│   ├── src/
+│   │   ├── app/              # Rutas y páginas de la aplicación
+│   │   ├── components/       # Componentes de interfaz de usuario
+│   │   ├── services/         # Cliente HTTP tipado para Laravel
+│   │   └── types/            # Definiciones de TypeScript
+│   ├── public/               # Recursos estáticos
+│   ├── Dockerfile
+│   └── package.json
+│
+├── backend/                  # Laravel (API RESTful + Sanctum + PostgreSQL)
+│   ├── app/
+│   │   ├── Http/
+│   │   │   ├── Controllers/
+│   │   │   ├── Requests/
+│   │   │   └── Resources/
+│   │   ├── Models/
+│   │   ├── Services/
+│   │   └── Policies/
+│   ├── database/
+│   │   ├── migrations/
+│   │   ├── seeders/
+│   │   └── factories/
+│   ├── routes/
+│   │   └── api.php
+│   ├── config/
+│   │   └── cors.php
+│   ├── Dockerfile
+│   └── composer.json
+│
+└── docker-compose.yml
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Inicio Rápido con Docker Compose
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Para levantar todo el entorno (Base de datos, Backend y Frontend):
 
-## Learn More
+```bash
+docker compose up -d
+```
 
-To learn more about Next.js, take a look at the following resources:
+### URLs de los servicios:
+- **Frontend (Next.js):** [http://localhost:3000](http://localhost:3000)
+- **Backend API (Laravel):** [http://localhost:8000/api](http://localhost:8000/api)
+- **API Health Check:** [http://localhost:8000/api/health](http://localhost:8000/api/health)
+- **Panel Web de Base de Datos (Adminer):** [http://localhost:8080](http://localhost:8080)
+- **Base de Datos (PostgreSQL):** `localhost:5432`
+  - Sistema: `PostgreSQL`
+  - Servidor (desde Adminer): `postgres`
+  - Servidor (desde tu PC / DBeaver): `localhost`
+  - Usuario: `app_user`
+  - Contraseña: `change_me_local`
+  - Base de datos: `app_db`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ⚙️ Configuraciones Recomendadas Incluidas
 
-## Deploy on Vercel
+### 1. Backend (Laravel):
+- **Laravel 13** con PHP 8.4 y extensiones `pdo_pgsql`, `pgsql`, `zip`, `bcmath`, `pcntl`.
+- **Laravel Sanctum** preinstalado para autenticación de API tokens y SPA cookie sessions.
+- **CORS configurado** (`config/cors.php`) admitiendo peticiones desde `http://localhost:3000` con `supports_credentials => true`.
+- **Ruta de salud:** `/api/health` para monitorizar estado y conectividad.
+- **Modelos:** `User` configurado con el trait `HasApiTokens`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. Frontend (Next.js):
+- **Cliente HTTP tipado:** (`src/services/api.ts`) preparado para peticiones REST (`get`, `post`, `put`, `patch`, `delete`), manejo de errores de validación de Laravel, Bearer token y cookies CSRF con Sanctum.
+- **Variables de entorno:** `NEXT_PUBLIC_API_URL=http://localhost:8000/api` en `.env.local`.
+- **Alias de importación:** `@/*` configurado hacia `./src/*`.
+- **Componente de estado:** `src/components/BackendStatus.tsx` para verificar en tiempo real la conexión con Laravel.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🛠️ Comandos de Desarrollo Útiles
+
+### Ejecutar migraciones en Laravel vía Docker:
+```bash
+docker compose exec backend php artisan migrate
+```
+
+### Ejecutar comandos de Artisan:
+```bash
+docker compose exec backend php artisan <comando>
+```
+
+### Detener los contenedores:
+```bash
+docker compose down
+```
