@@ -38,6 +38,11 @@ class User extends Authenticatable
         return $this->hasMany(Project::class);
     }
 
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_roles');
