@@ -25,7 +25,26 @@ export function BackendStatus() {
   };
 
   useEffect(() => {
-    checkConnection();
+    let isMounted = true;
+    api.healthCheck()
+      .then((data) => {
+        if (isMounted) {
+          setHealthData(data);
+          setStatus('connected');
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setStatus('error');
+          setErrorMessage(
+            err instanceof Error ? err.message : 'No se pudo conectar con el backend de Laravel'
+          );
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -83,4 +102,3 @@ export function BackendStatus() {
     </div>
   );
 }
-
